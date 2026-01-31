@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ContentSeries {
+  id          String   @id @default(uuid())
+  name        String   @unique // POV, soft_life, truth_bombs
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  posts       Post[]
+}
+
+model Post {
+  id              String        @id @default(uuid())
+  seriesId        String
+  series          ContentSeries @relation(fields: [seriesId], references: [id])
+  contentType     String        // reel, carousel
+  caption         String
+  aiPrompt        String
+  mediaUrls       String        // JSON array of URLs
+  status          String        @default("draft") // draft, scheduled, posted, failed
+  scheduledFor    DateTime?
+  postedAt        DateTime?
+  instagramId     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  analytics       Analytics[]
+  postingLog      PostingLog[]
+}
+
+model Analytics {
+  id          String   @id @default(uuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  likes       Int      @default(0)
+  comments    Int      @default(0)
+  shares      Int      @default(0)
+  views       Int      @default(0)
+  reach       Int      @default(0)
+  engagement  Float    @default(0)
+  fetchedAt   DateTime @default(now())
+}
+
+model PostingLog {
+  id          String   @id @default(uuid())
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id])
+  status      String   // success, failed, scheduled
+  message     String?
+  error       String?
+  timestamp   DateTime @default(now())
+}
+
+model AppConfig {
+  id                  String   @id @default(uuid())
+  key                 String   @unique
+  value               String
+  description         String?
+  updatedAt           DateTime @updatedAt
+}
