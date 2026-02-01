@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
+import markpostedbutton from "@/app/components/markpostedbutton";
 
 export default async function Home() {
   const { data: posts, error } = await supabase
