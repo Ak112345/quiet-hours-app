@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default async function Home() {
   const { data: posts, error } = await supabase
-    .from("posted")
+    .from("posts")
     .select("id, created_at, content, platform, scheduled_at, posted")
     .order("created_at", { ascending: false })
     .limit(20);
