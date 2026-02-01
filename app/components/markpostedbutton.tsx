@@ -7,32 +7,27 @@ type Props = {
   posted: boolean;
 };
 
-export default function markpostedbutton({ postId, posted }: Props) {
-  const togglePosted = async () => {
-    const { error } = await supabase
+export default function MarkPostedButton({ postId, posted }: Props) {
+  async function togglePosted() {
+    await supabase
       .from("posts")
       .update({ posted: !posted })
       .eq("id", postId);
 
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
     window.location.reload();
-  };
+  }
 
   return (
     <button
       onClick={togglePosted}
       style={{
-        marginTop: 10,
+        marginTop: 8,
         padding: "6px 10px",
         fontSize: 12,
-        borderRadius: 6,
         border: "1px solid #ccc",
-        background: posted ? "#e8ffe8" : "#fff",
+        borderRadius: 6,
         cursor: "pointer",
+        background: posted ? "#e5ffe5" : "#fff",
       }}
     >
       {posted ? "Mark as draft" : "Mark as posted"}
