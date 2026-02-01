@@ -1,46 +1,62 @@
-import { supabase } from "@/lib/supabaseClient";
-import MarkPostedButton from "@/app/components/markpostedbutton";
+import PostsPanel from "@/app/components/postspanel";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { PLATFORMS, type PostRow, type PostVM } from "@/lib/posts";
 
-export default async function Home() {
-  const { data: posts, error } = await supabase
+function formatLocalLabel(iso: string) {
+  // ✅ LOCK formatting on the server so client never re-formats dates (prevents hydration mismatch)
+  const d = new Date(iso);
+
+  // Use a stable format; no reliance on client locale/timezone.
+  // Example: 2026-02-01 16:04
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const min = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`;
+}
+
+export default async function Page() {
+  const supabase = createSupabaseServerClient();
+
+  const { data, error } = await supabase
     .from("posts")
     .select("id, created_at, content, platform, scheduled_at, posted")
-    .order("created_at", { ascending: false })
-    .limit(20);
+    .order("created_at", { ascending: false });
+
+  const rows: PostRow[] = (data || []) as PostRow[];
+
+  const posts: PostVM[] = rows.map((p) => {
+    const platform =
+      p.platform && (PLATFORMS as readonly string[]).includes(p.platform)
+        ? p.platform
+        : "unknown";
+
+    return {
+      id: p.id,
+      content: p.content ?? "",
+      platform: platform as PostVM["platform"],
+      posted: !!p.posted,
+      createdAtLabel: p.created_at ? formatLocalLabel(p.created_at) : "—",
+      scheduledAtLabel: p.scheduled_at ? formatLocalLabel(p.scheduled_at) : null,
+    };
+  });
 
   return (
-    <main style={{ padding: 24, fontFamily: "sans-serif", maxWidth: 720, margin: "0 auto" }}>
-      <h1 style={{ marginBottom: 8 }}>Quiet Hours</h1>
-      <p style={{ marginTop: 0, opacity: 0.7 }}>Latest posts</p>
+    <main style={{ maxWidth: 900, margin: "0 auto", padding: 24 }}>
+      <header style={{ marginBottom: 18 }}>
+        <h1 style={{ fontSize: 28, margin: 0 }}>Quiet Hours</h1>
+        <p style={{ marginTop: 6, color: "#666" }}>
+          Draft, filter, and track posts. Next: scheduling + platform workflows.
+        </p>
+        {error ? (
+          <p style={{ color: "crimson", marginTop: 10 }}>
+            Couldn’t load posts.
+          </p>
+        ) : null}
+      </header>
 
-      {error && (
-        <div style={{ padding: 12, border: "1px solid #f00", marginTop: 16 }}>
-          Error: {error.message}
-        </div>
-      )}
-
-      {!error && (!posts || posts.length === 0) && (
-        <p style={{ marginTop: 16 }}>No posts yet.</p>
-      )}
-
-      <div style={{ display: "grid", gap: 12, marginTop: 16 }}>
-        {posts?.map((p) => (
-          <div key={p.id} style={{ padding: 14, border: "1px solid #ddd", borderRadius: 10 }}>
-            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-              {new Date(p.created_at).toLocaleString()} · {p.platform || "—"}
-              {p.posted ? " · posted" : " · draft"}
-            </div>
-            <div style={{ fontSize: 18, lineHeight: 1.4 }}>{p.content}</div>
-            <MarkPostedButton postId={p.id} posted={p.posted} />
-
-            {p.scheduled_at && (
-              <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
-                Scheduled: {new Date(p.scheduled_at).toLocaleString()}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <PostsPanel posts={posts} />
     </main>
   );
 }

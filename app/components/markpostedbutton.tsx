@@ -1,57 +1,42 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useTransition } from "react";
+import { setPostedAction } from "@/app/actions/posts";
 
-type Props = {
+export default function MarkPostedButton({
+  postId,
+  posted,
+}: {
   postId: string;
   posted: boolean;
-};
-
-export default function MarkPostedButton({ postId, posted }: Props) {
-  const router = useRouter();
+}) {
   const [isPending, startTransition] = useTransition();
-  const [localPosted, setLocalPosted] = useState(posted);
-
-  async function togglePosted() {
-    const next = !localPosted;
-
-    // instant UI update
-    setLocalPosted(next);
-
-    const { error } = await supabase
-      .from("posts")
-      .update({ posted: next })
-      .eq("id", postId);
-
-    if (error) {
-      // revert if failed
-      setLocalPosted(!next);
-      alert(error.message);
-      return;
-    }
-
-    // refresh server data without reloading the page
-    startTransition(() => router.refresh());
-  }
+  const nextPosted = (!posted).toString();
 
   return (
-    <button
-      onClick={togglePosted}
-      disabled={isPending}
-      style={{
-        marginTop: 8,
-        padding: "6px 10px",
-        fontSize: 12,
-        border: "1px solid #ccc",
-        borderRadius: 6,
-        cursor: isPending ? "not-allowed" : "pointer",
-        opacity: isPending ? 0.6 : 1,
-        background: localPosted ? "#e5ffe5" : "#fff",
+    <form
+      action={(fd) => {
+        startTransition(() => setPostedAction(fd));
       }}
     >
-      {isPending ? "saving..." : localPosted ? "Mark as draft" : "Mark as posted"}
-    </button>
+      <input type="hidden" name="postId" value={postId} />
+      <input type="hidden" name="nextPosted" value={nextPosted} />
+
+      <button
+        type="submit"
+        disabled={isPending}
+        style={{
+          padding: "10px 12px",
+          borderRadius: 12,
+          border: "1px solid #ddd",
+          background: posted ? "#fff" : "#111",
+          color: posted ? "#111" : "#fff",
+          cursor: isPending ? "not-allowed" : "pointer",
+          minWidth: 120,
+        }}
+      >
+        {isPending ? "Updating…" : posted ? "Mark Draft" : "Mark Posted"}
+      </button>
+    </form>
   );
 }
