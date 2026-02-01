@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default async function Home() {
   const { data, error } = await supabase
-    .from("Posts")
+    .from("posts")
     .select("*")
     .limit(5);
 
