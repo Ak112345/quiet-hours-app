@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import markpostedbutton from "@/app/components/markpostedbutton";
+import MarkPostedButton from "@/app/components/markpostedbutton";
 
 export default async function Home() {
   const { data: posts, error } = await supabase
@@ -31,7 +31,7 @@ export default async function Home() {
               {p.posted ? " · posted" : " · draft"}
             </div>
             <div style={{ fontSize: 18, lineHeight: 1.4 }}>{p.content}</div>
-            <markpostedbutton postId={p.id} posted={p.posted} />
+            <MarkPostedButton postId={p.id} posted={p.posted} />
 
             {p.scheduled_at && (
               <div style={{ marginTop: 10, fontSize: 12, opacity: 0.7 }}>
