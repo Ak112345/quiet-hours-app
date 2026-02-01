@@ -1,7 +1,7 @@
 "use client";
 
 import type { PostVM } from "@/lib/posts";
-import PostCard from "@/app/components/postcard";
+import PostCard from "@/app/postcard";
 
 export default function PostList({
   posts,

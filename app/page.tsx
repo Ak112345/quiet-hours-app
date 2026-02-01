@@ -1,4 +1,4 @@
-import PostsPanel from "@/app/components/postspanel";
+import PostsPanel from "@/app/postspanel";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PLATFORMS, type PostRow, type PostVM } from "@/lib/posts";
 

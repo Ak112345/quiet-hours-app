@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { setPostedAction } from "@/app/actions/posts";
+import { setPostedAction } from "@/app/posts";
 
 export default function MarkPostedButton({
   postId,

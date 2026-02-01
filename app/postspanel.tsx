@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
 import type { PostVM } from "@/lib/posts";
-import FilterBar from "@/app/components/filterbar";
+import FilterBar from "@/app/filterbar";
 import PostTabs from "@/app/components/posttabs";
-import PostList from "@/app/components/postlist";
+import PostList from "@/app/postlist";
+
 
 type StatusFilter = "draft" | "posted" | "all";
 type PlatformFilter = "all" | PostVM["platform"];
